@@ -27,13 +27,65 @@ import java.util.Objects;
 
 
 @Controller
-@SessionAttributes("user")
+@RequestMapping(value = "/")
 public class WordSearchController {
-    @GetMapping(value = "/services/login")
+    @GetMapping(value = "/login")
     public ModelAndView getLogin() {
         return new ModelAndView("login","user",new User());
     }
 
+    @PostMapping(value = "/login")
+    public String authenticate(@Validated @ModelAttribute("user") User user, BindingResult result, ModelMap model) {
+        if(result.hasErrors()){
+            return "error";
+        }
+        if(checkUserExists(user.getUserName(), user.getPassword())) {
+            ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            HttpSession session = attr.getRequest().getSession();
+            session.setAttribute("userName", user.getUserName());
+            System.out.println("session created" + session.getAttribute("userName"));
+            return "redirect:wordSearch";
+        }
+        else {
+            return "redirect:login";
+        }
+
+    }
+
+    @GetMapping(value = "/wordSearch")
+    public ModelAndView wordSearch() {
+        return new ModelAndView("wordSearch","word", new Word());
+    }
+
+    @PostMapping(value = "/results")
+    public @ResponseBody String searchResults(@Validated @ModelAttribute("word") Word word, BindingResult bindingResult, ModelMap model) {
+        if(bindingResult.hasErrors()) {
+            return "error";
+        }
+        if(!word.getWord().equals("") && !word.getDirectory().equals("")) {
+            System.out.println("WordSearch Hit: Get Word: " + word.getWord() + "Get Directory: " + word.getDirectory());
+            MultiThreadedWordSearchService wordSearchService = new MultiThreadedWordSearchService();
+            List<Result> resultList = wordSearchService.search(new Query(word.getDirectory(), word.getWord(), true));
+            JSONArray resultArray = new JSONArray();
+            for (Result result : resultList) {
+                JSONObject obj = new JSONObject();
+                obj.put("lineNumber",result.getLineNumber());
+                obj.put("positionNumber", result.getPositionNumber());
+                obj.put("fileName",result.getFileName());
+                resultArray.add(obj);
+            }
+            return resultArray.toJSONString();
+        }
+        return "redirect:wordSearch";
+    }
+
+    @GetMapping(value = "/logout")
+    public String logout() {
+        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        HttpSession session = attr.getRequest().getSession(false);
+        session.invalidate();
+        return "redirect:login";
+    }
     private boolean checkUserExists(String username, String password) {
 
         Connection con = null;
@@ -69,56 +121,5 @@ public class WordSearchController {
             }
         }
     }
-    @PostMapping(value = "/services/login")
-    public String authenticate(@Validated @ModelAttribute("user") User user, BindingResult result, ModelMap model) {
-        if(result.hasErrors()){
-            return "error";
-        }
-        if(checkUserExists(user.getUserName(), user.getPassword())) {
-            ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-            HttpSession session = attr.getRequest().getSession();
-            session.setAttribute("userName", user.getUserName());
-            System.out.println("session created" + session.getAttribute("userName"));
-            return "redirect:wordSearch";
-        }
-        else {
-            return "redirect:login";
-        }
 
-    }
-
-    @GetMapping(value = "services/wordSearch")
-    public ModelAndView wordSearch() {
-        return new ModelAndView("wordSearch","word", new Word());
-    }
-
-    @PostMapping(value = "services/results")
-    public @ResponseBody String searchResults(@Validated @ModelAttribute("word") Word word, BindingResult bindingResult, ModelMap model) {
-        if(bindingResult.hasErrors()) {
-            return "error";
-        }
-        if(!word.getWord().equals("") && !word.getDirectory().equals("")) {
-            System.out.println("WordSearch Hit: Get Word: " + word.getWord() + "Get Directory: " + word.getDirectory());
-            MultiThreadedWordSearchService wordSearchService = new MultiThreadedWordSearchService();
-            List<Result> resultList = wordSearchService.search(new Query(word.getDirectory(), word.getWord(), true));
-            JSONArray resultArray = new JSONArray();
-            for (Result result : resultList) {
-                JSONObject obj = new JSONObject();
-                obj.put("lineNumber",result.getLineNumber());
-                obj.put("positionNumber", result.getPositionNumber());
-                obj.put("fileName",result.getFileName());
-                resultArray.add(obj);
-            }
-            return resultArray.toJSONString();
-        }
-        return "redirect:wordSearch";
-    }
-
-    @GetMapping(value = "services/logout")
-    public String logout() {
-        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-        HttpSession session = attr.getRequest().getSession(false);
-        session.invalidate();
-        return "redirect:login";
-    }
 }
