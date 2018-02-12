@@ -1,5 +1,6 @@
 package com.controllers;
 
+import com.database.Database;
 import com.models.User;
 import com.models.Word;
 import com.work.assignments.FileIO.MultiThreadedWordSearchService;
@@ -17,7 +18,12 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpSession;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
+import java.util.Objects;
 
 
 @Controller
@@ -27,13 +33,48 @@ public class WordSearchController {
     public ModelAndView getLogin() {
         return new ModelAndView("login","user",new User());
     }
+
+    private boolean checkUserExists(String username, String password) {
+
+        Connection con = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+        try {
+            con = Database.connectToDatabase();
+            statement = con.createStatement();
+            resultSet = statement.executeQuery("select * from users");
+            while (resultSet.next()) {
+                if (Objects.equals(resultSet.getString(1), username) && Objects.equals(resultSet.getString(2), password)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        finally {
+            try {
+                if(con!=null) {
+                    con.close();
+                }
+                if(statement!= null){
+                    statement.close();
+                }
+                if(resultSet!=null) {
+                    resultSet.close();
+                }
+            }
+            catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     @PostMapping(value = "/services/login")
     public String authenticate(@Validated @ModelAttribute("user") User user, BindingResult result, ModelMap model) {
         if(result.hasErrors()){
             return "error";
         }
-        System.out.println("hit: " + user.getUserName() + user.getPassword());
-        if(user.getPassword().equals("123")) {
+        if(checkUserExists(user.getUserName(), user.getPassword())) {
             ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
             HttpSession session = attr.getRequest().getSession();
             session.setAttribute("userName", user.getUserName());
