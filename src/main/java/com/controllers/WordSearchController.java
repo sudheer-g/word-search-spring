@@ -11,7 +11,6 @@ import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -35,11 +34,11 @@ public class WordSearchController {
     }
 
     @PostMapping(value = "/login")
-    public String authenticate(@Validated @ModelAttribute("user") User user, BindingResult result, ModelMap model) {
+    public String authenticate(@ModelAttribute("user") User user, BindingResult result) {
         if(result.hasErrors()){
             return "error";
         }
-        if(checkUserExists(user.getUserName(), user.getPassword())) {
+        if(Database.checkUserExists(user.getUserName(), user.getPassword())) {
             ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
             HttpSession session = attr.getRequest().getSession();
             session.setAttribute("userName", user.getUserName());
@@ -58,7 +57,7 @@ public class WordSearchController {
     }
 
     @PostMapping(value = "/results")
-    public @ResponseBody String searchResults(@Validated @ModelAttribute("word") Word word, BindingResult bindingResult, ModelMap model) {
+    public @ResponseBody String searchResults(@ModelAttribute("word") Word word, BindingResult bindingResult) {
         if(bindingResult.hasErrors()) {
             return "error";
         }
@@ -76,7 +75,7 @@ public class WordSearchController {
             }
             return resultArray.toJSONString();
         }
-        return "redirect:wordSearch";
+        return null;
     }
 
     @GetMapping(value = "/logout")
@@ -85,41 +84,6 @@ public class WordSearchController {
         HttpSession session = attr.getRequest().getSession(false);
         session.invalidate();
         return "redirect:login";
-    }
-    private boolean checkUserExists(String username, String password) {
-
-        Connection con = null;
-        Statement statement = null;
-        ResultSet resultSet = null;
-        try {
-            con = Database.connectToDatabase();
-            statement = con.createStatement();
-            resultSet = statement.executeQuery("select * from users");
-            while (resultSet.next()) {
-                if (Objects.equals(resultSet.getString(1), username) && Objects.equals(resultSet.getString(2), password)) {
-                    return true;
-                }
-            }
-            return false;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        finally {
-            try {
-                if(con!=null) {
-                    con.close();
-                }
-                if(statement!= null){
-                    statement.close();
-                }
-                if(resultSet!=null) {
-                    resultSet.close();
-                }
-            }
-            catch (SQLException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
 }

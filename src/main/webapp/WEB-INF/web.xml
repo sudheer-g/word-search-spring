@@ -4,12 +4,22 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
 http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" version="3.1">
   <display-name>Word Search Service</display-name>
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>
+      /WEB-INF/spring-security.xml
+    </param-value>
+  </context-param>
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
   <filter>
-    <filter-name>LoginAuthFilter</filter-name>
-    <filter-class>com.filters.LoginAuthFilter</filter-class>
+    <filter-name>springSecurityFilterChain</filter-name>
+    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
   </filter>
+
   <filter-mapping>
-    <filter-name>LoginAuthFilter</filter-name>
+    <filter-name>springSecurityFilterChain</filter-name>
     <url-pattern>/*</url-pattern>
   </filter-mapping>
   <servlet>
@@ -21,4 +31,7 @@ http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" version="3.1">
     <servlet-name>wordSearch</servlet-name>
     <url-pattern>/services/*</url-pattern>
   </servlet-mapping>
+  <session-config>
+    <tracking-mode>COOKIE</tracking-mode>
+  </session-config>
 </web-app>
