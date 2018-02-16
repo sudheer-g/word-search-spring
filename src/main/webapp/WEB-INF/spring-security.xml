@@ -20,10 +20,7 @@
 
     <http>
         <intercept-url pattern="/services/*" access="authenticated"/>
-        <!--
-            Allow all other requests. In a real application you should
-            adopt a whitelisting approach where access is not allowed by default
-        -->
+
         <intercept-url pattern="/**" access="permitAll"/>
         <form-login
                 default-target-url="/services/wordSearch"/>
@@ -36,13 +33,6 @@
 
     </http>
 
-    <!--
-    Usernames/Passwords are
-        rod/koala
-        dianne/emu
-        scott/wombat
-        peter/opal
-    -->
     <beans:bean id="encoder" class="org.springframework.security.crypto.password.NoOpPasswordEncoder" factory-method = "getInstance" />
 
     <authentication-manager>
