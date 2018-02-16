@@ -63,6 +63,12 @@
           <artifactId>spring-security-config</artifactId>
           <version>5.0.0.RELEASE</version>
       </dependency>
+      <!-- https://mvnrepository.com/artifact/org.springframework/spring-jdbc -->
+      <dependency>
+          <groupId>org.springframework</groupId>
+          <artifactId>spring-jdbc</artifactId>
+          <version>5.0.3.RELEASE</version>
+      </dependency>
   </dependencies>
   <build>
     <finalName>wordsearch</finalName>

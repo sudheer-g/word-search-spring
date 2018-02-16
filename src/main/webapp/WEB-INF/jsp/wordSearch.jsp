@@ -19,7 +19,8 @@
 <input type="submit" value="Search"/>
 </div>
 </form:form>
-<a href="logout"><button>Logout</button></a></button>
-</center>
+<form:form name="logout" method="POST" action="/wordsearch/logout">
+<input type="submit" value="Logout"/></center>
+</form:form>
 </body>
 </html>

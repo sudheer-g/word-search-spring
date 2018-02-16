@@ -1,4 +1,4 @@
 <html>
 <%@ page session="false" %>
-<a href="services/login">Login</a>
+<a href="login">Login</a>
 </html>
