@@ -19,6 +19,7 @@
     <global-method-security pre-post-annotations="enabled"/>
 
     <http>
+        <request-cache ref="httpSessionRequestCache"/>
         <intercept-url pattern="/services/*" access="authenticated"/>
 
         <intercept-url pattern="/**" access="permitAll"/>
@@ -32,6 +33,10 @@
         </session-management>
 
     </http>
+
+    <beans:bean id="httpSessionRequestCache" class="org.springframework.security.web.savedrequest.HttpSessionRequestCache">
+        <beans:property name="createSessionAllowed" value="false" />
+    </beans:bean>
 
     <beans:bean id="encoder" class="org.springframework.security.crypto.password.NoOpPasswordEncoder" factory-method = "getInstance" />
 
