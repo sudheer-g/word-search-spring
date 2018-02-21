@@ -19,6 +19,7 @@
     <global-method-security pre-post-annotations="enabled"/>
 
     <http>
+        <csrf disabled="true"/>
         <request-cache ref="httpSessionRequestCache"/>
         <intercept-url pattern="/services/*" access="authenticated"/>
 
@@ -34,28 +35,30 @@
 
     </http>
 
-    <beans:bean id="httpSessionRequestCache" class="org.springframework.security.web.savedrequest.HttpSessionRequestCache">
-        <beans:property name="createSessionAllowed" value="false" />
+    <beans:bean id="httpSessionRequestCache"
+                class="org.springframework.security.web.savedrequest.HttpSessionRequestCache">
+        <beans:property name="createSessionAllowed" value="false"/>
     </beans:bean>
 
-    <beans:bean id="encoder" class="org.springframework.security.crypto.password.NoOpPasswordEncoder" factory-method = "getInstance" />
+    <beans:bean id="encoder" class="org.springframework.security.crypto.password.NoOpPasswordEncoder"
+                factory-method="getInstance"/>
 
     <authentication-manager>
         <authentication-provider>
             <password-encoder ref="encoder"/>
             <jdbc-user-service data-source-ref="dataSource"
                                users-by-username-query="select users.username, users.password, users.enabled from users WHERE users.username = ?"
-                               authorities-by-username-query="select u.username, ur.authority from users u, users_roles ur where u.user_id = ur.user_id and u.username = ? " />
+                               authorities-by-username-query="select u.username, ur.authority from users u, users_roles ur where u.user_id = ur.user_id and u.username = ? "/>
         </authentication-provider>
     </authentication-manager>
 
     <beans:bean id="dataSource"
                 class="org.apache.commons.dbcp2.BasicDataSource">
-        <beans:property name="driverClassName" value="com.mysql.cj.jdbc.Driver" />
+        <beans:property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
         <beans:property name="url"
-                        value="jdbc:mysql://localhost:3306/wordSearch?autoReconnect=true&amp;useSSL=false" />
-        <beans:property name="username" value="root" />
-        <beans:property name="password" value="123" />
+                        value="jdbc:mysql://localhost:3306/wordSearch?autoReconnect=true&amp;useSSL=false"/>
+        <beans:property name="username" value="root"/>
+        <beans:property name="password" value="123"/>
     </beans:bean>
 
 </beans:beans>
